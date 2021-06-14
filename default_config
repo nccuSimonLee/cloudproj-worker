@@ -2,3 +2,4 @@
 AWS_REGION = 'us-east-1'
 FLASK_DEBUG = 'false'
 TOPIC_TABLE_NAME = 'topic_table'
+REPLY_TABLE_NAME = 'reply_table'

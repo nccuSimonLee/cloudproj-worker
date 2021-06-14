@@ -4,6 +4,7 @@ from flask import request, Response
 import os
 from boto3 import client
 from sentence_transformers import SentenceTransformer
+import uuid
 import torch
 import torch.nn as nn
 
@@ -39,6 +40,8 @@ def match_reply_to_topic():
             )
             logging.warning('matched topic: ' + str(match_topic))
 
+            reply_id = uuid.uuid4().hex
+            reply_data['reply_id'] = reply_id
             write_reply_to_ddb(reply_data, match_topic)
             publish_to_frontend(reply_data, match_topic)
             response = Response("", status=200)
@@ -54,7 +57,18 @@ def get_topics():
     return topics
 
 def write_reply_to_ddb(reply_data, match_topic):
-    pass
+    response = ddb.put_item(
+        TableName=application.config['REPLY_TABLE_NAME'],
+        Item={
+            'reply_id': {'S': reply_data['reply_id']},
+            'username': {'S': reply_data.get('userId', '')},
+            'date': {'S': reply_data.get('date', '')},
+            'time': {'S': reply_data.get('time', '')},
+            'topic_id': {'S': match_topic['topic_id']},
+            'text': {'S': reply_data['text']}
+        }
+    )
+    return response
 
 def publish_to_frontend(reply_data, match_topic):
     pass
