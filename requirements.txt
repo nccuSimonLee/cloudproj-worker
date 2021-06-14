@@ -1,0 +1,7 @@
+boto3
+click==6.7
+Flask==1.0
+itsdangerous==0.24
+MarkupSafe==1.1.1
+Werkzeug==0.15.5
+sentence-transformers==1.2.0
