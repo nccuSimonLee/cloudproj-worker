@@ -7,6 +7,7 @@ from sentence_transformers import SentenceTransformer
 import uuid
 import torch
 import torch.nn as nn
+import requests
 
 # Create and configure the Flask app
 application = flask.Flask(__name__)
@@ -42,8 +43,14 @@ def match_reply_to_topic():
 
             reply_id = uuid.uuid4().hex
             reply_data['reply_id'] = reply_id
+
             write_reply_to_ddb(reply_data, match_topic)
-            publish_to_frontend(reply_data, match_topic)
+
+            frontend_response = publish_to_frontend(reply_data, match_topic)
+            logging.warning('frontend response: ' + str(frontend_response))
+            if frontend_response.status_code == 200:
+                logging.warning('frontend response content: ' + frontend_response.text)
+
             response = Response("", status=200)
         except Exception as ex:
             logging.exception('Error processing message: %s' % request.json)
@@ -71,7 +78,20 @@ def write_reply_to_ddb(reply_data, match_topic):
     return response
 
 def publish_to_frontend(reply_data, match_topic):
-    pass
+    url = 'https://wiq2ve4q31.execute-api.us-east-1.amazonaws.com/devx/dialugue'
+    date, time = reply_data.get('date', ''), reply_data.get('time', '')
+    timestamp = f'{date} {time}' if date and time else ''
+    response = requests.post(
+        url=url,
+        json={
+            'id': reply_data['reply_id'],
+            'title_id': match_topic['topic_id'],
+            'speaker': reply_data.get('userId', ''),
+            'content': reply_data['text'],
+            'timestamp': timestamp
+        }
+    )
+    return response
 
 if __name__ == '__main__':
     application.run(host='0.0.0.0')
