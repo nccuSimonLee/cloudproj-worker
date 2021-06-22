@@ -1,3 +1,8 @@
+# Introduction
+The application aims to match the replies in the line discussion group with the discussion topics in the dynamoDB, and publish them to the database of the frontend.
+
+The matching is performed by calculating the semantic similarity between the topics and a given reply. The similarity between a topic and a reply is the inner product of their sentence embeddings.
+
 # Deployment
  1. Open the elastic beanstalk console
  2. Click `Create a new environment` and select `Worker environment`
